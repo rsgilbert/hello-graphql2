@@ -1,18 +1,31 @@
 const { GraphQLServer } = require('graphql-yoga')
 
-// schema
-const typeDefs = `
-    type Query {
-        info: String!
-        feed: [Link]!
+// decides where the data will be got from
+const resolvers = {
+    Query: {
+        info: () => `Simple graphql API`,
+        feed: () => links,    
+    },
+
+    Mutation: {
+        post: (_parent, args) => {
+            let link = {
+                id: `link-${links.length}`,
+                description: args.description,
+                url: args.url
+            }
+            links.push(link)
+            return link
+        }
     }
-   
-    type Link {
-        id: ID!
-        description: String!
-        url: String!
-    }
-`;
+}
+
+const server = new GraphQLServer({
+    typeDefs: './src/schema.graphql',
+    resolvers,
+})
+
+server.start(() => console.log('Server is running on localhost:4000'))
 
 let links = [
     {
@@ -25,19 +38,3 @@ let links = [
         description: 'Being Polite'
     }
 ]
-
-// decides where the data will be got from
-const resolvers = {
-    Query: {
-        info: () => `Simple graphql API`,
-        feed: () => links
-    
-    }
-}
-
-const server = new GraphQLServer({
-    typeDefs,
-    resolvers,
-})
-
-server.start(() => console.log('Server is running on localhost:4000'))
